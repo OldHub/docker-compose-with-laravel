@@ -1,0 +1,60 @@
+networks:
+  project:
+
+services:
+  site:
+    build:
+      context: ./dockerfiles
+      dockerfile: nginx.dockerfile
+    container_name: nginx-your-project
+    volumes:
+      - /src:/var/www:delegated
+    ports:
+      - "80:80"
+    networks:
+      - project
+
+  mysql:
+    image: mysql:latest
+    container_name: mysql-your-project
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ./mysql:/var/lib/mysql
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: homestead
+      MYSQL_USER: homestead
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    networks:
+      - project
+
+  php:
+    build:
+      context: ./dockerfiles
+      dockerfile: php.dockerfile
+    container_name: php-your-project
+    volumes:
+      - /src:/var/www:delegated
+    networks:
+      - project
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - project
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - project
